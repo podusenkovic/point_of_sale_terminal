@@ -39,6 +39,11 @@ signals:
 	void notEnoughMoney();
 	void sumsUpAreOk();
 	void sumsUpArentOk();
+	void badRequestToPay();
+	void gotTransactions(QString);
+	void noTransactionsForThisCard();
+	void refundComplete();
+	void somethingBadWithRefund();
 public slots:
 	void createTestRequest();
 	void readData();
@@ -47,6 +52,10 @@ public slots:
 	void startPayTransaction(QString, QString);
 	void checkBalance(QString card);
 	void saveAllTransactions();
+	void requestTransactions(QString cardNum);
+	void requestToRefund(int);
+		
+	QString getTransactions(QString cardNum);
 private:
 	QTcpSocket* tcpSocket = nullptr;
 	int id;

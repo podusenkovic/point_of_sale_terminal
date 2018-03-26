@@ -22,7 +22,9 @@ public:
 		dateExpire = d;
 		cardsCVV = cvv;
 	}
-	
+	QString getNumber(){
+		return number;
+	}
 	QString cardToString(){
 		QString card = number + ":"
 					   + cardHolderName + ":"

@@ -39,7 +39,15 @@ public slots:
 	void notEnoughMoney();
 	void sumsUpAreOk();
 	void sumsUpArentOk();
-	
+	void badRequestToPay();
+	void moveRefundChoose(QAbstractButton *but);
+	void chooseWhatRefund();
+	void askHostForTransactions();
+	void noTransactionsForThisCard();
+	void gotTransactions(QString);
+	void refundComplete();
+	void somethingBadWithRefund();
+	void showError();
 	
 	void keyPressEvent(QKeyEvent *event);
 private:
@@ -49,8 +57,12 @@ private:
 	int MENUSIZE;
     int menuChoose;
 	
+	int refundChoose;
 	Card *winCard = nullptr;
 	cardInfo* savedCard = nullptr;
+	
+	QTimer *timerToMenu;
+	QTimer *timerToError;
 	
     Ui::MainWindow *ui;
 };

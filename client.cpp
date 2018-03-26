@@ -136,10 +136,14 @@ void Client::readData(){
 		emit connectionReady();
 	if (code == "0220")
 		emit gotBalance(data.split(":")[1]);
-	if (code == "0123")
+	if (code == "0123"){
 		emit badCardInfo();
-	if (code == "0124")
+		allTran.pop_back();
+	}
+	if (code == "0124"){
 		emit badCardNumber();
+		allTran.pop_back();
+	}
 	if (code == "0120")
 		emit payTransactionGood();
 	if (code == "0125"){
@@ -150,9 +154,25 @@ void Client::readData(){
 		emit sumsUpAreOk();
 	if (code == "0127")
 		emit sumsUpArentOk();
-		
-	
-	
+	if (code == "0126"){
+		emit badRequestToPay();
+		allTran.pop_back();
+	}
+	if (code == "0740")
+		emit noTransactionsForThisCard();
+	if (code == "0720")
+		emit gotTransactions(data.split(":")[1]);
+	if (code == "0620"){
+		emit refundComplete();
+		for (int i = 0; i < allTran.size(); i++){
+			if (allTran[i].idTran == data.split(":")[1].toInt()){
+				allTran.remove(i);
+				break;
+			}
+		}
+	}
+	if (code == "0650")
+		emit somethingBadWithRefund();
 }
 
 void Client::checkBalance(QString card){
@@ -205,11 +225,9 @@ void Client::saveAllTransactions(){
 	}	
 	file.close();
 	
-	
 	tcpSocket->abort();
 	tcpSocket->connectToHost(hostAddress,
 							 hostPort);
-	
 	QByteArray block;
 	QDataStream out(&block, QIODevice::WriteOnly);
 	out.setVersion(QDataStream::Qt_4_0);
@@ -217,10 +235,50 @@ void Client::saveAllTransactions(){
 	for (int i = 0; i < summary.keys().size(); i++){
 		sumUp = summary.keys()[i] + " " + QString::number(summary[summary.keys()[i]]) + "\r\n";
 	}
-	
 	QString data = QString::number(id) + ":0530:" + sumUp;
-	qDebug() << data;
 	out << data;
 	tcpSocket->write(block);
 	
+}
+
+
+QString Client::getTransactions(QString cardNum){
+	QString toReturn = "";
+	for (int i = 0; i < allTran.size(); i++)
+		if (allTran[i].card == cardNum)
+			toReturn += " id:" + QString::number(allTran[i].idTran) + " "
+						+ allTran[i].amountTran + "$" + "\n";
+	return toReturn;
+}
+
+
+void Client::requestTransactions(QString cardNum){
+	tcpSocket->abort();
+	tcpSocket->connectToHost(hostAddress,
+							 hostPort);
+	
+	QByteArray block;
+	QDataStream out(&block, QIODevice::WriteOnly);
+	out.setVersion(QDataStream::Qt_4_0);
+	
+	
+	QString data = QString::number(id) + ":0710:" + cardNum; // transactions request
+	out << data;
+	tcpSocket->write(block);
+}
+
+void Client::requestToRefund(int num){
+	tcpSocket->abort();
+	tcpSocket->connectToHost(hostAddress,
+							 hostPort);
+	
+	QByteArray block;
+	QDataStream out(&block, QIODevice::WriteOnly);
+	out.setVersion(QDataStream::Qt_4_0);
+	
+	qDebug() << num << allTran[num].idTran;
+	
+	QString data = QString::number(id) + ":0610:" + allTran[num].idTran; // request to refund
+	out << data;
+	tcpSocket->write(block);	
 }
