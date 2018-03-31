@@ -157,6 +157,7 @@ void MainWindow::completeCommand(){
 	ui->buttons_to_control->disconnect();
 	if (savedCard == nullptr && menuChoose != 4){
 		ui->mainLabel->setText("Please, choose card\nto use!");
+		timerToMenu->start();
 		return;
 	}
     //-------------Pay--------------------------------------------
@@ -348,6 +349,7 @@ void MainWindow::moveRefundChoose(QAbstractButton *but){
 }
 
 void MainWindow::chooseWhatRefund(){
+	ui->button_done->disconnect();
 	timerToError->start();
 	ui->mainLabel->setText("Asking to refund");
 	client->requestToRefund(refundChoose);
